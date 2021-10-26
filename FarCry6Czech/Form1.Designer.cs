@@ -88,11 +88,11 @@ namespace FarCry6Czech
             // 
             this.label1.AutoSize = true;
             this.label1.Font = new System.Drawing.Font("Segoe UI", 18F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point);
-            this.label1.Location = new System.Drawing.Point(138, 279);
+            this.label1.Location = new System.Drawing.Point(103, 278);
             this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(205, 32);
+            this.label1.Size = new System.Drawing.Size(274, 32);
             this.label1.TabIndex = 3;
-            this.label1.Text = "Far Cry 6 Čeština";
+            this.label1.Text = "Far Cry 6 Čeština v1.00";
             // 
             // label2
             // 
@@ -214,7 +214,7 @@ namespace FarCry6Czech
             // linkLabel1
             // 
             this.linkLabel1.AutoSize = true;
-            this.linkLabel1.Location = new System.Drawing.Point(113, 316);
+            this.linkLabel1.Location = new System.Drawing.Point(109, 316);
             this.linkLabel1.Name = "linkLabel1";
             this.linkLabel1.Size = new System.Drawing.Size(258, 15);
             this.linkLabel1.TabIndex = 9;

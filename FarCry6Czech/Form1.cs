@@ -208,6 +208,7 @@ namespace FarCry6Czech
 
                 if (sel == "")
                 {
+                    Write("Bad path: " + sel);
                     MessageBox.Show(this, "Vybraná cesta není správná.", Text, MessageBoxButtons.OK, MessageBoxIcon.Error);
                     SelectGameExe();
                     return;
@@ -215,6 +216,7 @@ namespace FarCry6Czech
 
                 if (!File.Exists(sel) || !sel.ToLower().EndsWith("bin\\farcry6.exe"))
                 {
+                    Write("Bad game path: " + sel);
                     MessageBox.Show(this, "Soubor s hrou neexistuje.", Text, MessageBoxButtons.OK, MessageBoxIcon.Error);
                     SelectGameExe();
                     return;
@@ -229,6 +231,7 @@ namespace FarCry6Czech
 
                 if (File.Exists(patchRtroBak))
                 {
+                    Write("Used Mod Installer: " + sel);
                     MessageBox.Show(this, "Vypadá to, že máte nainstalované módy pomocí Mod Installeru. Pokud chcete nainstalovat češtinu společně s módy, použijte přímo A3 balíček s češtinou v Mod Installeru.", Text, MessageBoxButtons.OK, MessageBoxIcon.Information);
                     return;
                 }
@@ -236,9 +239,16 @@ namespace FarCry6Czech
                 allow = true;
                 bInstall.Enabled = true;
                 bUninstall.Enabled = true;
+
+                Write("Selected path: " + sel);
             }
         }
-        
+
+        private void Write(string data)
+        {
+            File.AppendAllText(logFile, DateTime.Now.ToString("HH:mm:ss") + " -> " + data + Environment.NewLine);
+        }
+
         private ZipArchive GetBaseFromResourceData()
         {
             Assembly assembly = GetType().Assembly;
@@ -257,8 +267,10 @@ namespace FarCry6Czech
         }
 
         bool allow = false;
+        string ver = "1.00";
+        string logFile = "FarCry6Czech.log";
         string BaseDir = "";
-        string baseFile = "FarCry6Czech.bin";
+        string baseFile = "FarCry6Czech.zip";
         string bakFatFile = ".fat.bak";
         string patchPath = "";
         string patchFat = "";
@@ -281,6 +293,10 @@ namespace FarCry6Czech
         {
             using var processModule = Process.GetCurrentProcess().MainModule;
             BaseDir = Path.GetDirectoryName(processModule?.FileName) + "\\";
+            Write("Far Cry 6 Czech v" + ver);
+            Write("Started.");
+            Text += " v" + ver;
+            label1.Text = "Far Cry 6 Čeština v" + ver;
         }
 
         private void bSelectExe_Click(object sender, EventArgs e)
@@ -293,6 +309,8 @@ namespace FarCry6Czech
             if (!allow)
                 return;
 
+            Write("Starting install...");
+
             if (!File.Exists(patchFat) && !File.Exists(patchDat))
             {
                 File.WriteAllBytes(patchDat, new byte[] { });
@@ -304,16 +322,24 @@ namespace FarCry6Czech
                 };
 
                 File.WriteAllBytes(patchFat, emptyFat);
+
+                Write("Patch files didn't exist. Created.");
             }
 
             if (File.Exists(patchBak))
             {
+                Write("Restoring FAT and DAT...");
                 RestoreFatBak(patchBak, patchDat, patchFat);
+                Write("FAT and DAT restored");
             }
 
+            Write("Creating FAT bak...");
             CreateFatBak(patchDat, patchFat, patchBak);
+            Write("FAT bak created.");
 
+            Write("Loading FAT...");
             SortedDictionary<ulong, FatEntry> Entries = GetFatEntries(patchFat);
+            Write("FAT loaded.");
 
             FileStream outputDat = File.Open(patchDat, FileMode.Open);
             outputDat.Seek(outputDat.Length, SeekOrigin.Begin);
@@ -321,8 +347,12 @@ namespace FarCry6Czech
             outputDat.WriteStringZ("Far Cry 6 Czech starts here.", Encoding.ASCII);
             outputDat.Seek(outputDat.Position.Align(16), SeekOrigin.Begin);
 
+            Write("DAT opened, seek, begin to write...");
+
             foreach (FileToPack fileToPack in filesToPack)
             {
+                Write("Preparing to write " + fileToPack.Source + "...");
+
                 ZipArchive archive = null;
                 if (File.Exists(BaseDir + baseFile))
                     archive = ZipFile.OpenRead(BaseDir + baseFile);
@@ -335,6 +365,8 @@ namespace FarCry6Czech
                 var ms = new MemoryStream();
                 zipInput.CopyTo(ms);
                 byte[] bytes = ms.ToArray();
+
+                Write("Got " + fileToPack.Source + " from zip.");
 
                 ulong fileHash = CRC64.Hash(fileToPack.Target);
 
@@ -355,13 +387,20 @@ namespace FarCry6Czech
 
                 outputDat.Write(bytes);
                 outputDat.Seek(outputDat.Position.Align(16), SeekOrigin.Begin);
+
+                Write("Wrote " + fileToPack.Source + ".");
             }
 
+            Write("Flushing DAT...");
             outputDat.Flush();
             outputDat.Close();
+            Write("DAT saved.");
 
+            Write("Creating FAT...");
             CreateNewFat(patchFat, Entries);
+            Write("FAT created.");
 
+            Write("Install done.");
             MessageBox.Show(this, "Čeština byla úspěšně nainstalována.", Text, MessageBoxButtons.OK, MessageBoxIcon.Information);
         }
 
@@ -373,10 +412,16 @@ namespace FarCry6Czech
             bool res = MessageBox.Show(this, "Opravdu?", Text, MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes;
             if (res)
             {
+                Write("Uninstalling...");
+
                 if (File.Exists(patchBak))
                 {
+                    Write("Restoring FAT and DAT...");
                     RestoreFatBak(patchBak, patchDat, patchFat);
+                    Write("FAT and DAT restored");
                 }
+
+                Write("Uninstall done.");
                 MessageBox.Show(this, "Čeština byla úspěšně odinstalována.", Text, MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
         }
