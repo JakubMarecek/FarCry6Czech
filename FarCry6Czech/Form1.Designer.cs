@@ -37,22 +37,29 @@ namespace FarCry6Czech
             this.label2 = new System.Windows.Forms.Label();
             this.groupBox1 = new System.Windows.Forms.GroupBox();
             this.groupBox2 = new System.Windows.Forms.GroupBox();
+            this.label4 = new System.Windows.Forms.Label();
             this.bInstall = new System.Windows.Forms.Button();
             this.groupBox3 = new System.Windows.Forms.GroupBox();
+            this.label5 = new System.Windows.Forms.Label();
             this.bUninstall = new System.Windows.Forms.Button();
-            this.label3 = new System.Windows.Forms.Label();
+            this.groupBox4 = new System.Windows.Forms.GroupBox();
+            this.label6 = new System.Windows.Forms.Label();
+            this.linkLabel1 = new System.Windows.Forms.LinkLabel();
+            this.textBox1 = new System.Windows.Forms.TextBox();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
             this.groupBox1.SuspendLayout();
             this.groupBox2.SuspendLayout();
             this.groupBox3.SuspendLayout();
+            this.groupBox4.SuspendLayout();
             this.SuspendLayout();
             // 
             // bSelectExe
             // 
             this.bSelectExe.FlatStyle = System.Windows.Forms.FlatStyle.System;
-            this.bSelectExe.Location = new System.Drawing.Point(326, 51);
+            this.bSelectExe.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
+            this.bSelectExe.Location = new System.Drawing.Point(340, 51);
             this.bSelectExe.Name = "bSelectExe";
-            this.bSelectExe.Size = new System.Drawing.Size(125, 32);
+            this.bSelectExe.Size = new System.Drawing.Size(111, 28);
             this.bSelectExe.TabIndex = 0;
             this.bSelectExe.Text = "Procházet...";
             this.bSelectExe.UseVisualStyleBackColor = true;
@@ -60,8 +67,10 @@ namespace FarCry6Czech
             // 
             // tbGameExe
             // 
+            this.tbGameExe.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
             this.tbGameExe.Location = new System.Drawing.Point(6, 22);
             this.tbGameExe.Name = "tbGameExe";
+            this.tbGameExe.ReadOnly = true;
             this.tbGameExe.Size = new System.Drawing.Size(445, 23);
             this.tbGameExe.TabIndex = 1;
             // 
@@ -88,7 +97,8 @@ namespace FarCry6Czech
             // label2
             // 
             this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(6, 86);
+            this.label2.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
+            this.label2.Location = new System.Drawing.Point(6, 82);
             this.label2.Name = "label2";
             this.label2.Size = new System.Drawing.Size(432, 60);
             this.label2.TabIndex = 4;
@@ -101,27 +111,42 @@ namespace FarCry6Czech
             this.groupBox1.Controls.Add(this.tbGameExe);
             this.groupBox1.Controls.Add(this.label2);
             this.groupBox1.Controls.Add(this.bSelectExe);
+            this.groupBox1.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point);
             this.groupBox1.Location = new System.Drawing.Point(483, 12);
             this.groupBox1.Name = "groupBox1";
-            this.groupBox1.Size = new System.Drawing.Size(457, 159);
+            this.groupBox1.Size = new System.Drawing.Size(457, 154);
             this.groupBox1.TabIndex = 5;
             this.groupBox1.TabStop = false;
-            this.groupBox1.Text = "1. Krok - Vyber složku s hrou";
+            this.groupBox1.Text = "1. Krok - Vyberte složku s hrou";
             // 
             // groupBox2
             // 
+            this.groupBox2.Controls.Add(this.label4);
             this.groupBox2.Controls.Add(this.bInstall);
-            this.groupBox2.Location = new System.Drawing.Point(483, 177);
+            this.groupBox2.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point);
+            this.groupBox2.Location = new System.Drawing.Point(483, 172);
             this.groupBox2.Name = "groupBox2";
-            this.groupBox2.Size = new System.Drawing.Size(457, 100);
+            this.groupBox2.Size = new System.Drawing.Size(457, 95);
             this.groupBox2.TabIndex = 6;
             this.groupBox2.TabStop = false;
             this.groupBox2.Text = "2. Krok - Instalace";
             // 
+            // label4
+            // 
+            this.label4.AutoSize = true;
+            this.label4.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
+            this.label4.Location = new System.Drawing.Point(6, 19);
+            this.label4.Name = "label4";
+            this.label4.Size = new System.Drawing.Size(284, 15);
+            this.label4.TabIndex = 8;
+            this.label4.Text = "Nyní stačí kliknout na tlačítko níže pro nainstalování.";
+            // 
             // bInstall
             // 
+            this.bInstall.Enabled = false;
             this.bInstall.FlatStyle = System.Windows.Forms.FlatStyle.System;
-            this.bInstall.Location = new System.Drawing.Point(164, 36);
+            this.bInstall.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
+            this.bInstall.Location = new System.Drawing.Point(164, 49);
             this.bInstall.Name = "bInstall";
             this.bInstall.Size = new System.Drawing.Size(125, 32);
             this.bInstall.TabIndex = 7;
@@ -131,18 +156,33 @@ namespace FarCry6Czech
             // 
             // groupBox3
             // 
+            this.groupBox3.Controls.Add(this.label5);
             this.groupBox3.Controls.Add(this.bUninstall);
-            this.groupBox3.Location = new System.Drawing.Point(483, 283);
+            this.groupBox3.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point);
+            this.groupBox3.Location = new System.Drawing.Point(483, 422);
             this.groupBox3.Name = "groupBox3";
             this.groupBox3.Size = new System.Drawing.Size(457, 100);
             this.groupBox3.TabIndex = 7;
             this.groupBox3.TabStop = false;
             this.groupBox3.Text = "V případě oddinstalace";
             // 
+            // label5
+            // 
+            this.label5.AutoSize = true;
+            this.label5.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
+            this.label5.Location = new System.Drawing.Point(6, 19);
+            this.label5.Name = "label5";
+            this.label5.Size = new System.Drawing.Size(410, 30);
+            this.label5.TabIndex = 9;
+            this.label5.Text = "Kliknutím na tlačítko níže oddinstalujete češtinu ze hry, herní soubory budou\r\nvr" +
+    "áceny na svůj původní stav.";
+            // 
             // bUninstall
             // 
+            this.bUninstall.Enabled = false;
             this.bUninstall.FlatStyle = System.Windows.Forms.FlatStyle.System;
-            this.bUninstall.Location = new System.Drawing.Point(164, 38);
+            this.bUninstall.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
+            this.bUninstall.Location = new System.Drawing.Point(164, 52);
             this.bUninstall.Name = "bUninstall";
             this.bUninstall.Size = new System.Drawing.Size(125, 32);
             this.bUninstall.TabIndex = 8;
@@ -150,22 +190,59 @@ namespace FarCry6Czech
             this.bUninstall.UseVisualStyleBackColor = true;
             this.bUninstall.Click += new System.EventHandler(this.bUninstall_Click);
             // 
-            // label3
+            // groupBox4
             // 
-            this.label3.AutoSize = true;
-            this.label3.Location = new System.Drawing.Point(12, 321);
-            this.label3.Name = "label3";
-            this.label3.Size = new System.Drawing.Size(443, 105);
-            this.label3.TabIndex = 5;
-            this.label3.Text = resources.GetString("label3.Text");
+            this.groupBox4.Controls.Add(this.label6);
+            this.groupBox4.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point);
+            this.groupBox4.Location = new System.Drawing.Point(483, 273);
+            this.groupBox4.Name = "groupBox4";
+            this.groupBox4.Size = new System.Drawing.Size(457, 50);
+            this.groupBox4.TabIndex = 8;
+            this.groupBox4.TabStop = false;
+            this.groupBox4.Text = "3. Krok - Hrát";
+            // 
+            // label6
+            // 
+            this.label6.AutoSize = true;
+            this.label6.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
+            this.label6.Location = new System.Drawing.Point(6, 19);
+            this.label6.Name = "label6";
+            this.label6.Size = new System.Drawing.Size(230, 15);
+            this.label6.TabIndex = 9;
+            this.label6.Text = "Nyní je již vše připravené, můžete hrát hru.";
+            // 
+            // linkLabel1
+            // 
+            this.linkLabel1.AutoSize = true;
+            this.linkLabel1.Location = new System.Drawing.Point(113, 316);
+            this.linkLabel1.Name = "linkLabel1";
+            this.linkLabel1.Size = new System.Drawing.Size(258, 15);
+            this.linkLabel1.TabIndex = 9;
+            this.linkLabel1.TabStop = true;
+            this.linkLabel1.Text = "https://prekladyher.eu/preklady/far-cry-6.1132/";
+            this.linkLabel1.LinkClicked += new System.Windows.Forms.LinkLabelLinkClickedEventHandler(this.linkLabel1_LinkClicked);
+            // 
+            // textBox1
+            // 
+            this.textBox1.Font = new System.Drawing.Font("Consolas", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
+            this.textBox1.Location = new System.Drawing.Point(12, 342);
+            this.textBox1.Multiline = true;
+            this.textBox1.Name = "textBox1";
+            this.textBox1.ReadOnly = true;
+            this.textBox1.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
+            this.textBox1.Size = new System.Drawing.Size(453, 180);
+            this.textBox1.TabIndex = 10;
+            this.textBox1.Text = resources.GetString("textBox1.Text");
             // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.SystemColors.Control;
-            this.ClientSize = new System.Drawing.Size(958, 465);
-            this.Controls.Add(this.label3);
+            this.ClientSize = new System.Drawing.Size(952, 534);
+            this.Controls.Add(this.textBox1);
+            this.Controls.Add(this.linkLabel1);
+            this.Controls.Add(this.groupBox4);
             this.Controls.Add(this.groupBox3);
             this.Controls.Add(this.groupBox2);
             this.Controls.Add(this.groupBox1);
@@ -182,7 +259,11 @@ namespace FarCry6Czech
             this.groupBox1.ResumeLayout(false);
             this.groupBox1.PerformLayout();
             this.groupBox2.ResumeLayout(false);
+            this.groupBox2.PerformLayout();
             this.groupBox3.ResumeLayout(false);
+            this.groupBox3.PerformLayout();
+            this.groupBox4.ResumeLayout(false);
+            this.groupBox4.PerformLayout();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -200,7 +281,12 @@ namespace FarCry6Czech
         private System.Windows.Forms.Button bInstall;
         private System.Windows.Forms.GroupBox groupBox3;
         private System.Windows.Forms.Button bUninstall;
-        private System.Windows.Forms.Label label3;
+        private System.Windows.Forms.Label label4;
+        private System.Windows.Forms.Label label5;
+        private System.Windows.Forms.GroupBox groupBox4;
+        private System.Windows.Forms.Label label6;
+        private System.Windows.Forms.LinkLabel linkLabel1;
+        private System.Windows.Forms.TextBox textBox1;
     }
 }
 

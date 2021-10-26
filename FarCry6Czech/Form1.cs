@@ -1,7 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
+using System.IO.Compression;
+using System.Linq;
+using System.Reflection;
+using System.Text;
 using System.Windows.Forms;
+using Gibbed.Dunia2.FileFormats;
 using Gibbed.IO;
 
 namespace FarCry6Czech
@@ -14,8 +20,8 @@ namespace FarCry6Czech
             byte[] fatOrig = File.ReadAllBytes(fatFilePath);
 
             FileStream bin = new FileStream(fatBakFilePath, FileMode.CreateNew);
-            bin.WriteValueU64((ulong)datLen);
-            bin.WriteValueU64((ulong)fatOrig.Length);
+            bin.WriteValueS64(datLen);
+            bin.WriteValueS64(fatOrig.Length);
             bin.Write(fatOrig, 0, fatOrig.Length);
             bin.Close();
         }
@@ -24,14 +30,14 @@ namespace FarCry6Czech
         {
             FileStream TFATStream = new FileStream(FatBak, FileMode.Open);
 
-            ulong InstallpkgDatLength = TFATStream.ReadValueU64();
-            ulong InstallpkgFatLength = TFATStream.ReadValueU64();
+            long InstallpkgDatLength = TFATStream.ReadValueS64();
+            long InstallpkgFatLength = TFATStream.ReadValueS64();
 
             byte[] origInstallpkgFat = TFATStream.ReadBytes((int)InstallpkgFatLength);
 
             FileStream outputInstallpkgDat = File.Open(dat, FileMode.Open);
-            outputInstallpkgDat.Seek((long)InstallpkgDatLength, SeekOrigin.Begin);
-            outputInstallpkgDat.SetLength((long)InstallpkgDatLength);
+            outputInstallpkgDat.Seek(InstallpkgDatLength, SeekOrigin.Begin);
+            outputInstallpkgDat.SetLength(InstallpkgDatLength);
             outputInstallpkgDat.Flush();
             outputInstallpkgDat.Close();
 
@@ -42,21 +48,15 @@ namespace FarCry6Czech
             File.WriteAllBytes(fat, origInstallpkgFat);
         }
 
-        public void CreateNewFat(string fatFilePath, FileStream fatStream, SortedDictionary<ulong, FatEntry> Entries)
+        public void CreateNewFat(string fatFilePath, SortedDictionary<ulong, FatEntry> Entries)
         {
             if (fatFilePath != null && File.Exists(fatFilePath))
                 File.Delete(fatFilePath);
 
-            int fatVer = 11;
-
-            FileStream output;
-            if (fatFilePath == null)
-                output = fatStream;
-            else
-                output = File.Create(fatFilePath);
+            FileStream output = File.Create(fatFilePath);
 
             output.WriteValueU32(0x46415432, 0);
-            output.WriteValueS32(fatVer, 0);
+            output.WriteValueS32(11, 0);
 
             output.WriteByte(1);
 
@@ -72,27 +72,24 @@ namespace FarCry6Czech
             {
                 var fatEntry = Entries[entryE];
 
-                if (fatVer == 11)
-                {
-                    uint dwHash = (uint)((fatEntry.NameHash & 0xFFFFFFFF00000000ul) >> 32);
-                    uint dwHash2 = (uint)((fatEntry.NameHash & 0x00000000FFFFFFFFul) >> 0);
+                uint dwHash = (uint)((fatEntry.NameHash & 0xFFFFFFFF00000000ul) >> 32);
+                uint dwHash2 = (uint)((fatEntry.NameHash & 0x00000000FFFFFFFFul) >> 0);
 
-                    uint dwUncompressedSize = 0u;
-                    dwUncompressedSize = (uint)((int)dwUncompressedSize | ((int)(fatEntry.UncompressedSize << 2) & -4));
-                    dwUncompressedSize = (uint)((int)dwUncompressedSize | (int)((int)fatEntry.CompressionScheme & 3L));
+                uint dwUncompressedSize = 0u;
+                dwUncompressedSize = (uint)((int)dwUncompressedSize | ((int)(fatEntry.UncompressedSize << 2) & -4));
+                dwUncompressedSize = (uint)((int)dwUncompressedSize | (int)((int)fatEntry.CompressionScheme & 3L));
 
-                    uint dwUnresolvedOffset = (uint)(((fatEntry.Offset >> 4) & 0x7FFFFFFF8) >> 3);
+                uint dwUnresolvedOffset = (uint)(((fatEntry.Offset >> 4) & 0x7FFFFFFF8) >> 3);
 
-                    uint dwCompressedSize = 0u;
-                    dwCompressedSize = (uint)((int)dwCompressedSize | (int)((fatEntry.Offset >> 4) << 29));
-                    dwCompressedSize |= (fatEntry.CompressedSize & 0x1FFFFFFF);
+                uint dwCompressedSize = 0u;
+                dwCompressedSize = (uint)((int)dwCompressedSize | (int)((fatEntry.Offset >> 4) << 29));
+                dwCompressedSize |= (fatEntry.CompressedSize & 0x1FFFFFFF);
 
-                    output.WriteValueU32(dwHash, 0);
-                    output.WriteValueU32(dwHash2, 0);
-                    output.WriteValueU32(dwUncompressedSize, 0);
-                    output.WriteValueU32(dwUnresolvedOffset, 0);
-                    output.WriteValueU32(dwCompressedSize, 0);
-                }
+                output.WriteValueU32(dwHash, 0);
+                output.WriteValueU32(dwHash2, 0);
+                output.WriteValueU32(dwUncompressedSize, 0);
+                output.WriteValueU32(dwUnresolvedOffset, 0);
+                output.WriteValueU32(dwCompressedSize, 0);
             }
 
             output.WriteValueU32(0, 0);
@@ -101,57 +98,30 @@ namespace FarCry6Czech
             output.Close();
         }
 
-        public SortedDictionary<ulong, FatEntry> GetFatEntries(string fatFile, bool isRtroBak, out long datLength)
+        public SortedDictionary<ulong, FatEntry> GetFatEntries(string fatFile)
         {
             FileStream TFATStream = new FileStream(fatFile, FileMode.Open, FileAccess.Read);
-            return GetFatEntriesStream(TFATStream, isRtroBak, out datLength);
-        }
-        public SortedDictionary<ulong, FatEntry> GetFatEntriesStream(FileStream TFATStream, bool isRtroBak, out long datLength)
-        {
-            datLength = 0;
 
             SortedDictionary<ulong, FatEntry> Entries = new SortedDictionary<ulong, FatEntry>();
-
-            if (isRtroBak)
-            {
-                int bakMagic = TFATStream.ReadValueS32();
-                datLength = TFATStream.ReadValueS64();
-                long fatLength = TFATStream.ReadValueS64();
-
-                if (bakMagic != fatBakHeader)
-                {
-                    Logging.Write("Wrong version of patch.fat.rtroBak.");
-                    TFATStream.Dispose();
-                    TFATStream.Close();
-                    return null;
-                }
-            }
 
             int dwMagic = TFATStream.ReadValueS32();
             int dwVersion = TFATStream.ReadValueS32();
             int dwUnknown = TFATStream.ReadValueS32();
 
-            int dwSubfatTotalEntryCount = 0;
-            int dwSubfatCount = 0;
-            if (dwVersion >= 9)
-            {
-                dwSubfatTotalEntryCount = TFATStream.ReadValueS32();
-                dwSubfatCount = TFATStream.ReadValueS32();
-            }
+            int dwSubfatTotalEntryCount = TFATStream.ReadValueS32();
+            int dwSubfatCount = TFATStream.ReadValueS32();
 
             int dwTotalFiles = TFATStream.ReadValueS32();
 
             if (dwMagic != 0x46415432)
             {
-                Logging.Write("Invalid FAT Index file!");
                 TFATStream.Dispose();
                 TFATStream.Close();
                 return null;
             }
 
-            if (((CurrentGame == GameType.FarCry6) && dwVersion != 11) || ((CurrentGame == GameType.FarCry5 || CurrentGame == GameType.FarCryNewDawn) && dwVersion != 10) || ((CurrentGame == GameType.FarCry3 || CurrentGame == GameType.FarCry4) && dwVersion != 9))
+            if (dwVersion != 11)
             {
-                Logging.Write("Invalid version of FAT Index file!");
                 TFATStream.Dispose();
                 TFATStream.Close();
                 return null;
@@ -159,7 +129,7 @@ namespace FarCry6Czech
 
             for (int i = 0; i < dwTotalFiles; i++)
             {
-                FatEntry entry = GetFatEntriesDeserialize(TFATStream, dwVersion);
+                FatEntry entry = GetFatEntriesDeserialize(TFATStream);
                 Entries[entry.NameHash] = entry;
             }
 
@@ -183,7 +153,7 @@ namespace FarCry6Czech
                 uint subfatEntryCount = TFATStream.ReadValueU32();
                 for (uint j = 0; j < subfatEntryCount; j++)
                 {
-                    FatEntry entry = GetFatEntriesDeserialize(TFATStream, dwVersion);
+                    FatEntry entry = GetFatEntriesDeserialize(TFATStream);
                     Entries[entry.NameHash] = entry;
                 }
             }
@@ -194,7 +164,7 @@ namespace FarCry6Czech
             return Entries;
         }
 
-        static FatEntry GetFatEntriesDeserialize(FileStream TFATStream, int dwVersion)
+        static FatEntry GetFatEntriesDeserialize(FileStream TFATStream)
         {
             ulong dwHash = TFATStream.ReadValueU64();
             dwHash = (dwHash << 32) + (dwHash >> 32);
@@ -203,31 +173,13 @@ namespace FarCry6Czech
             uint dwUnresolvedOffset = TFATStream.ReadValueU32();
             uint dwCompressedSize = TFATStream.ReadValueU32();
 
-            uint dwFlag = 0;
-            ulong dwOffset = 0;
+            uint dwFlag;
+            ulong dwOffset;
 
-            if (dwVersion == 11)
-            {
-                dwFlag = dwUncompressedSize & 3;
-                dwOffset = ((ulong)dwCompressedSize >> 29 | (ulong)dwUnresolvedOffset << 3) << 4; // thx to ミルクティー (miru)
-                dwCompressedSize = (dwCompressedSize & 0x1FFFFFFF);
-                dwUncompressedSize = (dwUncompressedSize >> 2);
-            }
-            if (dwVersion == 10)
-            {
-                dwFlag = dwUncompressedSize & 3;
-                dwOffset = dwCompressedSize >> 29 | 8ul * dwUnresolvedOffset;
-                dwCompressedSize = (dwCompressedSize & 0x1FFFFFFF);
-                dwUncompressedSize = (dwUncompressedSize >> 2);
-            }
-            if (dwVersion == 9)
-            {
-                dwFlag = (dwUncompressedSize & 0x00000003u) >> 0;
-                dwOffset = (ulong)dwUnresolvedOffset << 2;
-                dwOffset |= (dwCompressedSize & 0xC0000000u) >> 30;
-                dwCompressedSize = (uint)((dwCompressedSize & 0x3FFFFFFFul) >> 0);
-                dwUncompressedSize = (dwUncompressedSize & 0xFFFFFFFCu) >> 2;
-            }
+            dwFlag = dwUncompressedSize & 3;
+            dwOffset = ((ulong)dwCompressedSize >> 29 | (ulong)dwUnresolvedOffset << 3) << 4; // thx to ミルクティー (miru)
+            dwCompressedSize = (dwCompressedSize & 0x1FFFFFFF);
+            dwUncompressedSize = (dwUncompressedSize >> 2);
 
             var entry = new FatEntry();
             entry.NameHash = dwHash;
@@ -239,17 +191,86 @@ namespace FarCry6Czech
             return entry;
         }
 
+        private void SelectGameExe()
+        {
+            tbGameExe.Text = "";
+            allow = false;
+            bInstall.Enabled = false;
+            bUninstall.Enabled = false;
 
+            OpenFileDialog openFileDialog = new();
+            openFileDialog.Title = "Vyber složku s hrou";
+            openFileDialog.Filter = "Far Cry 6|farcry6.exe";
+            //openFileDialog.InitialDirectory = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
+            if (openFileDialog.ShowDialog() == DialogResult.OK)
+            {
+                string sel = openFileDialog.FileName;
 
+                if (sel == "")
+                {
+                    MessageBox.Show(this, "Vybraná cesta není správná.", Text, MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    SelectGameExe();
+                    return;
+                }
 
+                if (!File.Exists(sel) || !sel.ToLower().EndsWith("bin\\farcry6.exe"))
+                {
+                    MessageBox.Show(this, "Soubor s hrou neexistuje.", Text, MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    SelectGameExe();
+                    return;
+                }
 
+                tbGameExe.Text = sel;
+                patchPath = sel.ToLower().Replace("bin\\farcry6.exe", "data_final\\pc\\patch");
+                patchFat = patchPath + ".fat";
+                patchDat = patchPath + ".dat";
+                patchRtroBak = patchPath + ".fat.rtrobak";
+                patchBak = patchPath + bakFatFile;
 
+                if (File.Exists(patchRtroBak))
+                {
+                    MessageBox.Show(this, "Vypadá to, že máte nainstalované módy pomocí Mod Installeru. Pokud chcete nainstalovat češtinu společně s módy, použijte přímo A3 balíček s češtinou v Mod Installeru.", Text, MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    return;
+                }
 
+                allow = true;
+                bInstall.Enabled = true;
+                bUninstall.Enabled = true;
+            }
+        }
+        
+        private ZipArchive GetBaseFromResourceData()
+        {
+            Assembly assembly = GetType().Assembly;
+            Stream stream = assembly.GetManifestResourceStream(assembly.GetName().Name + "." + baseFile);
 
+            ZipArchive zipArchive = new(stream);
 
+            return zipArchive;
+        }
 
+        struct FileToPack
+        {
+            public string Source { set; get; }
 
+            public string Target { set; get; }
+        }
+
+        bool allow = false;
+        string BaseDir = "";
+        string baseFile = "FarCry6Czech.bin";
         string bakFatFile = ".fat.bak";
+        string patchPath = "";
+        string patchFat = "";
+        string patchDat = "";
+        string patchRtroBak = "";
+        string patchBak = "";
+        FileToPack[] filesToPack = new FileToPack[]
+        {
+            new() { Source = "oasisstrings.oasis.bin", Target = @"languages\english\oasisstrings.oasis.bin" },
+            new() { Source = "oasisstrings_subtitles.oasis.bin", Target = @"languages\english\oasisstrings_subtitles.oasis.bin" },
+            new() { Source = "oasisstrings_subtitles_male.oasis.bin", Target = @"languages\english\oasisstrings_subtitles_male.oasis.bin" }
+        };
 
         public Form1()
         {
@@ -258,76 +279,116 @@ namespace FarCry6Czech
 
         private void Form1_Load(object sender, EventArgs e)
         {
-
+            using var processModule = Process.GetCurrentProcess().MainModule;
+            BaseDir = Path.GetDirectoryName(processModule?.FileName) + "\\";
         }
 
         private void bSelectExe_Click(object sender, EventArgs e)
         {
-            OpenFileDialog openFileDialog = new();
-            openFileDialog.Title = "Vyber složku s hrou";
-            openFileDialog.Filter = "Far Cry 6|farcry6.exe";
-            openFileDialog.InitialDirectory = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
-            if (openFileDialog.ShowDialog() == DialogResult.OK)
-            {
-                tbGameExe.Text = openFileDialog.FileName;
-            }
+            SelectGameExe();
         }
 
         private void bInstall_Click(object sender, EventArgs e)
         {
-            if (tbGameExe.Text == "")
-            {
-                MessageBox.Show(this, "", Text, MessageBoxButtons.OK, MessageBoxIcon.Error);
+            if (!allow)
                 return;
-            }
-
-            if (!File.Exists(tbGameExe.Text))
-            {
-                MessageBox.Show(this, "", Text, MessageBoxButtons.OK, MessageBoxIcon.Error);
-                return;
-            }
-
-            string patchPath = tbGameExe.Text.ToLower().Replace("bin\\farcry6.exe", "data_final\\pc\\patch");
-            string patchFat = patchPath + ".fat";
-            string patchDat = patchPath + ".dat";
-            string patchRtroBak = patchPath + ".fat.rtrobak";
-            string patchBak = patchPath + bakFatFile;
 
             if (!File.Exists(patchFat) && !File.Exists(patchDat))
             {
-                // todo create clean patch files
-            }
+                File.WriteAllBytes(patchDat, new byte[] { });
 
-            if (File.Exists(patchRtroBak))
-            {
-                MessageBox.Show(this, "", Text, MessageBoxButtons.OK, MessageBoxIcon.Error);
-                return;
+                byte[] emptyFat = new byte[]
+                {
+                    0x32, 0x54, 0x41, 0x46, 0x0B, 0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+                    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
+                };
+
+                File.WriteAllBytes(patchFat, emptyFat);
             }
 
             if (File.Exists(patchBak))
             {
                 RestoreFatBak(patchBak, patchDat, patchFat);
             }
-            else
+
+            CreateFatBak(patchDat, patchFat, patchBak);
+
+            SortedDictionary<ulong, FatEntry> Entries = GetFatEntries(patchFat);
+
+            FileStream outputDat = File.Open(patchDat, FileMode.Open);
+            outputDat.Seek(outputDat.Length, SeekOrigin.Begin);
+
+            outputDat.WriteStringZ("Far Cry 6 Czech starts here.", Encoding.ASCII);
+            outputDat.Seek(outputDat.Position.Align(16), SeekOrigin.Begin);
+
+            foreach (FileToPack fileToPack in filesToPack)
             {
-                CreateFatBak(patchDat, patchFat, patchBak);
+                ZipArchive archive = null;
+                if (File.Exists(BaseDir + baseFile))
+                    archive = ZipFile.OpenRead(BaseDir + baseFile);
+                else
+                    archive = GetBaseFromResourceData();
+
+                ZipArchiveEntry zipEntry = archive.Entries.Where(e => e.Name.ToLowerInvariant() == fileToPack.Source.ToLowerInvariant()).FirstOrDefault();
+
+                Stream zipInput = zipEntry.Open();
+                var ms = new MemoryStream();
+                zipInput.CopyTo(ms);
+                byte[] bytes = ms.ToArray();
+
+                ulong fileHash = CRC64.Hash(fileToPack.Target);
+
+                if (!Entries.TryGetValue(fileHash, out FatEntry entry))
+                {
+                    entry = new FatEntry
+                    {
+                        NameHash = fileHash
+                    };
+                }
+
+                entry.CompressionScheme = CompressionScheme.None;
+                entry.UncompressedSize = (uint)bytes.Length;
+                entry.CompressedSize = (uint)bytes.Length;
+
+                entry.Offset = outputDat.Position;
+                Entries[entry.NameHash] = entry;
+
+                outputDat.Write(bytes);
+                outputDat.Seek(outputDat.Position.Align(16), SeekOrigin.Begin);
             }
 
-            // load fat here
+            outputDat.Flush();
+            outputDat.Close();
 
+            CreateNewFat(patchFat, Entries);
 
-            // write new files here
-
-
-            // create new fat here
-
-
-
+            MessageBox.Show(this, "Čeština byla úspěšně nainstalována.", Text, MessageBoxButtons.OK, MessageBoxIcon.Information);
         }
 
         private void bUninstall_Click(object sender, EventArgs e)
         {
+            if (!allow)
+                return;
 
+            bool res = MessageBox.Show(this, "Opravdu?", Text, MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes;
+            if (res)
+            {
+                if (File.Exists(patchBak))
+                {
+                    RestoreFatBak(patchBak, patchDat, patchFat);
+                }
+                MessageBox.Show(this, "Čeština byla úspěšně odinstalována.", Text, MessageBoxButtons.OK, MessageBoxIcon.Information);
+            }
+        }
+
+        private void linkLabel1_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
+        {
+            var ps = new ProcessStartInfo("https://prekladyher.eu/preklady/far-cry-6.1132/")
+            {
+                UseShellExecute = true,
+                Verb = "open"
+            };
+            Process.Start(ps);
         }
     }
 }
