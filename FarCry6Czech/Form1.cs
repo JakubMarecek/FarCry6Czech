@@ -284,12 +284,15 @@ namespace FarCry6Czech
             public string Target { set; get; }
         }
 
+        // ========================================================================================================================================
+
         bool allow = false;
-        string ver = "1.00";
-        string logFile = "FarCry6Czech.log";
+        const string ver = "1.00";
+        const string appVer = "20211031-2200";
+        const string logFile = "FarCry6Czech.log";
         string BaseDir = "";
-        string baseFile = "FarCry6Czech.zip";
-        string bakFatFile = ".fat.bak";
+        const string baseFile = "FarCry6Czech.zip";
+        const string bakFatFile = ".fat.bak";
         string patchPath = "";
         string patchFat = "";
         string patchDat = "";
@@ -301,6 +304,35 @@ namespace FarCry6Czech
             new() { Source = "oasisstrings_subtitles.oasis.bin", Target = @"languages\english\oasisstrings_subtitles.oasis.bin" },
             new() { Source = "oasisstrings_subtitles_male.oasis.bin", Target = @"languages\english\oasisstrings_subtitles_male.oasis.bin" }
         };
+        const string desc = @"
+Ubisoft se rozhodl Far Cry 6 nepřekládat, a tak nám nezbývá nic než hrát hru v angličině.
+Proto jsme se rozhodli vytvořit vlastní český překlad.
+
+= INSTALACE =
+=============
+Instalováním češtiny bude přepsán anglický jazyk ve hře, takže zvolte v Uplay / Epic jazyk English a ve hře zvolte anglické titulky.
+
+Pokud instalujete update češtiny, stačí opět vybrat složku s hrou a poté kliknout na ""Instalovat"".
+
+
+= KDO HRU PŘEKLÁDAL =
+=====================
+Johnny Cash
+Jarek459
+Sary
+Reloader158CZ
+mlekocze12
+
+= INSTALÁTOR =
+==============
+ArmanIII
+
+= TESTEŘI PŘEKLADU =
+====================
+Ajper
+Fellras
+Paras
+";
 
         public Form1()
         {
@@ -315,6 +347,8 @@ namespace FarCry6Czech
             Write("Started.");
             Text += " v" + ver;
             label1.Text = "Far Cry 6 Čeština v" + ver;
+            textBox1.Text = desc;
+            lAppVer.Text = "Verze app: " + appVer;
         }
 
         private void bSelectExe_Click(object sender, EventArgs e)
@@ -344,8 +378,16 @@ namespace FarCry6Czech
                 Write("Patch files didn't exist. Created.");
             }
 
+            FileStream outputDat = File.Open(patchDat, FileMode.Open);
+            outputDat.Seek(outputDat.Length, SeekOrigin.Begin);
+
             if (File.Exists(patchBak))
             {
+                outputDat.Seek(outputDat.Length - 27, SeekOrigin.Begin);
+                string identif = outputDat.ReadStringZ(Encoding.ASCII);
+
+
+
                 Write("Restoring FAT and DAT...");
                 RestoreFatBak(patchBak, patchDat, patchFat);
                 Write("FAT and DAT restored");
@@ -358,9 +400,6 @@ namespace FarCry6Czech
             Write("Loading FAT...");
             SortedDictionary<ulong, FatEntry> Entries = GetFatEntries(patchFat);
             Write("FAT loaded.");
-
-            FileStream outputDat = File.Open(patchDat, FileMode.Open);
-            outputDat.Seek(outputDat.Length, SeekOrigin.Begin);
 
             outputDat.WriteStringZ("Far Cry 6 Czech starts here.", Encoding.ASCII);
             outputDat.Seek(outputDat.Position.Align(16), SeekOrigin.Begin);
@@ -408,6 +447,8 @@ namespace FarCry6Czech
 
                 Write("Wrote " + fileToPack.Source + ".");
             }
+
+            outputDat.WriteStringZ("Far Cry 6 Czech ends here.", Encoding.ASCII);
 
             Write("Flushing DAT...");
             outputDat.Flush();

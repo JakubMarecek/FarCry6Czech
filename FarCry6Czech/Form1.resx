@@ -24309,36 +24309,6 @@
         njPGeM8DodZ48Px/mv8AzHjPGeB0Ov/Z
 </value>
   </data>
-  <data name="textBox1.Text" xml:space="preserve">
-    <value>Ubisoft se rozhodl Far Cry 6 nepřekládat, a tak nám nezbývá nic než hrát hru v angličině.
-Proto jsme se rozhodli vytvořit vlastní český překlad.
-
-= INSTALACE =
-=============
-Instalováním češtiny bude přepsán anglický jazyk ve hře, takže zvolte v Uplay / Epic jazyk English a ve hře zvolte anglické titulky.
-
-Pokud instalujete update češtiny, stačí opět vybrat složku s hrou a poté kliknout na "Instalovat".
-
-
-= KDO HRU PŘEKLÁDAL =
-=====================
-Johnny Cash
-Jarek459
-Sary
-Reloader158CZ
-mlekocze12
-
-= INSTALÁTOR =
-==============
-ArmanIII
-
-= TESTEŘI PŘEKLADU =
-====================
-Ajper
-Fellras
-Paras
-</value>
-  </data>
   <data name="$this.Icon" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
     <value>
         AAABAAgAAAAAAAEAGABMOQEAhgAAAEBAAAABABgAKDIAANI5AQAwMAAAAQAYAKgcAAD6awEAKCgAAAEA

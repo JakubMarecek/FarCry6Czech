@@ -64,6 +64,7 @@ namespace FarCry6Czech
             this.label6 = new System.Windows.Forms.Label();
             this.linkLabel1 = new System.Windows.Forms.LinkLabel();
             this.textBox1 = new System.Windows.Forms.TextBox();
+            this.lAppVer = new System.Windows.Forms.Label();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
             this.groupBox1.SuspendLayout();
             this.groupBox2.SuspendLayout();
@@ -177,7 +178,7 @@ namespace FarCry6Czech
             this.groupBox3.Controls.Add(this.label5);
             this.groupBox3.Controls.Add(this.bUninstall);
             this.groupBox3.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point);
-            this.groupBox3.Location = new System.Drawing.Point(483, 422);
+            this.groupBox3.Location = new System.Drawing.Point(483, 394);
             this.groupBox3.Name = "groupBox3";
             this.groupBox3.Size = new System.Drawing.Size(457, 100);
             this.groupBox3.TabIndex = 7;
@@ -250,7 +251,16 @@ namespace FarCry6Czech
             this.textBox1.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
             this.textBox1.Size = new System.Drawing.Size(453, 180);
             this.textBox1.TabIndex = 10;
-            this.textBox1.Text = resources.GetString("textBox1.Text");
+            // 
+            // lAppVer
+            // 
+            this.lAppVer.ForeColor = System.Drawing.SystemColors.ControlDark;
+            this.lAppVer.Location = new System.Drawing.Point(736, 510);
+            this.lAppVer.Name = "lAppVer";
+            this.lAppVer.Size = new System.Drawing.Size(204, 15);
+            this.lAppVer.TabIndex = 11;
+            this.lAppVer.Text = "appVer";
+            this.lAppVer.TextAlign = System.Drawing.ContentAlignment.TopRight;
             // 
             // Form1
             // 
@@ -258,6 +268,7 @@ namespace FarCry6Czech
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.SystemColors.Control;
             this.ClientSize = new System.Drawing.Size(952, 534);
+            this.Controls.Add(this.lAppVer);
             this.Controls.Add(this.textBox1);
             this.Controls.Add(this.linkLabel1);
             this.Controls.Add(this.groupBox4);
@@ -305,6 +316,6 @@ namespace FarCry6Czech
         private System.Windows.Forms.Label label6;
         private System.Windows.Forms.LinkLabel linkLabel1;
         private System.Windows.Forms.TextBox textBox1;
+        private System.Windows.Forms.Label lAppVer;
     }
 }
-
