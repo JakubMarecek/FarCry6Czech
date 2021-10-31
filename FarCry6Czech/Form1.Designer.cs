@@ -65,6 +65,7 @@ namespace FarCry6Czech
             this.linkLabel1 = new System.Windows.Forms.LinkLabel();
             this.textBox1 = new System.Windows.Forms.TextBox();
             this.lAppVer = new System.Windows.Forms.Label();
+            this.lStatus = new System.Windows.Forms.Label();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
             this.groupBox1.SuspendLayout();
             this.groupBox2.SuspendLayout();
@@ -143,7 +144,7 @@ namespace FarCry6Czech
             this.groupBox2.Controls.Add(this.label4);
             this.groupBox2.Controls.Add(this.bInstall);
             this.groupBox2.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point);
-            this.groupBox2.Location = new System.Drawing.Point(483, 172);
+            this.groupBox2.Location = new System.Drawing.Point(483, 215);
             this.groupBox2.Name = "groupBox2";
             this.groupBox2.Size = new System.Drawing.Size(457, 95);
             this.groupBox2.TabIndex = 6;
@@ -178,7 +179,7 @@ namespace FarCry6Czech
             this.groupBox3.Controls.Add(this.label5);
             this.groupBox3.Controls.Add(this.bUninstall);
             this.groupBox3.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point);
-            this.groupBox3.Location = new System.Drawing.Point(483, 394);
+            this.groupBox3.Location = new System.Drawing.Point(483, 407);
             this.groupBox3.Name = "groupBox3";
             this.groupBox3.Size = new System.Drawing.Size(457, 100);
             this.groupBox3.TabIndex = 7;
@@ -213,7 +214,7 @@ namespace FarCry6Czech
             // 
             this.groupBox4.Controls.Add(this.label6);
             this.groupBox4.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point);
-            this.groupBox4.Location = new System.Drawing.Point(483, 273);
+            this.groupBox4.Location = new System.Drawing.Point(483, 316);
             this.groupBox4.Name = "groupBox4";
             this.groupBox4.Size = new System.Drawing.Size(457, 50);
             this.groupBox4.TabIndex = 8;
@@ -262,12 +263,23 @@ namespace FarCry6Czech
             this.lAppVer.Text = "appVer";
             this.lAppVer.TextAlign = System.Drawing.ContentAlignment.TopRight;
             // 
+            // lStatus
+            // 
+            this.lStatus.Font = new System.Drawing.Font("Segoe UI", 11.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point);
+            this.lStatus.Location = new System.Drawing.Point(483, 169);
+            this.lStatus.Name = "lStatus";
+            this.lStatus.Size = new System.Drawing.Size(457, 43);
+            this.lStatus.TabIndex = 12;
+            this.lStatus.Text = "status";
+            this.lStatus.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.SystemColors.Control;
             this.ClientSize = new System.Drawing.Size(952, 534);
+            this.Controls.Add(this.lStatus);
             this.Controls.Add(this.lAppVer);
             this.Controls.Add(this.textBox1);
             this.Controls.Add(this.linkLabel1);
@@ -317,5 +329,6 @@ namespace FarCry6Czech
         private System.Windows.Forms.LinkLabel linkLabel1;
         private System.Windows.Forms.TextBox textBox1;
         private System.Windows.Forms.Label lAppVer;
+        private System.Windows.Forms.Label lStatus;
     }
 }

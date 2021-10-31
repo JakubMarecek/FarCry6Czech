@@ -19,6 +19,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Drawing;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
@@ -32,6 +33,58 @@ namespace FarCry6Czech
 {
     public partial class Form1 : Form
     {
+        bool allow = false;
+        const string ver = "1.00";
+        const string appVer = "20211031-2200";
+        const string logFile = "FarCry6Czech.log";
+        string BaseDir = "";
+        const string baseFile = "FarCry6Czech.zip";
+        const string bakFatFile = ".fat.bak";
+        string patchPath = "";
+        string patchFat = "";
+        string patchDat = "";
+        string patchRtroBak = "";
+        string patchBak = "";
+        const string identifStr = "Far Cry 6 Czech ends here.";
+        string readVer = "";
+        FileToPack[] filesToPack = new FileToPack[]
+        {
+            new() { Source = "oasisstrings.oasis.bin", Target = @"languages\english\oasisstrings.oasis.bin" },
+            new() { Source = "oasisstrings_subtitles.oasis.bin", Target = @"languages\english\oasisstrings_subtitles.oasis.bin" },
+            new() { Source = "oasisstrings_subtitles_male.oasis.bin", Target = @"languages\english\oasisstrings_subtitles_male.oasis.bin" }
+        };
+        const string desc = @"Ubisoft se rozhodl Far Cry 6 nepřekládat, a tak nám nezbývá nic než hrát hru v angličině.
+Proto jsme se rozhodli vytvořit vlastní český překlad.
+
+= INSTALACE =
+=============
+Instalováním češtiny bude přepsán anglický jazyk ve hře, takže zvolte v Uplay / Epic jazyk English a ve hře zvolte anglické titulky.
+
+Pokud instalujete update češtiny, stačí opět vybrat složku s hrou a poté kliknout na ""Instalovat"".
+
+
+= KDO HRU PŘEKLÁDAL =
+=====================
+Johnny Cash
+Jarek459
+Sary
+Reloader158CZ
+mlekocze12
+
+= INSTALÁTOR =
+==============
+ArmanIII
+
+= TESTEŘI PŘEKLADU =
+====================
+Ajper
+Fellras
+Paras
+Hugozlata
+SpillCZ-Ripple
+BoB
+";
+
         public void CreateFatBak(string datFilePath, string fatFilePath, string fatBakFilePath)
         {
             long datLen = new FileInfo(datFilePath).Length;
@@ -259,6 +312,44 @@ namespace FarCry6Czech
                 bUninstall.Enabled = true;
 
                 Write("Selected path: " + sel);
+
+                if (File.Exists(patchDat))
+                {
+                    FileStream outputDat = File.Open(patchDat, FileMode.Open);
+                    outputDat.Seek(outputDat.Length, SeekOrigin.Begin);
+
+                    if (outputDat.Length > 30)
+                    {
+                        outputDat.Seek(outputDat.Length - 32, SeekOrigin.Begin);
+                        string identif = outputDat.ReadStringZ(Encoding.ASCII);
+                        readVer = outputDat.ReadStringZ(Encoding.ASCII);
+
+                        InstallStatus(identif == identifStr);
+                    }
+                    else
+                        InstallStatus(false);
+
+                    outputDat.Close();
+                }
+                else
+                    InstallStatus(false);
+            }
+        }
+
+        void InstallStatus(bool stat)
+        {
+            if (stat)
+            {
+                if (readVer != "")
+                    lStatus.Text = $"Čeština verze {readVer} je nainstalována.";
+                else
+                    lStatus.Text = "Čeština je nainstalována.";
+                lStatus.ForeColor = Color.Green;
+            }
+            else
+            {
+                lStatus.Text = "Čeština není nainstalována.";
+                lStatus.ForeColor = Color.Red;
             }
         }
 
@@ -284,56 +375,6 @@ namespace FarCry6Czech
             public string Target { set; get; }
         }
 
-        // ========================================================================================================================================
-
-        bool allow = false;
-        const string ver = "1.00";
-        const string appVer = "20211031-2200";
-        const string logFile = "FarCry6Czech.log";
-        string BaseDir = "";
-        const string baseFile = "FarCry6Czech.zip";
-        const string bakFatFile = ".fat.bak";
-        string patchPath = "";
-        string patchFat = "";
-        string patchDat = "";
-        string patchRtroBak = "";
-        string patchBak = "";
-        FileToPack[] filesToPack = new FileToPack[]
-        {
-            new() { Source = "oasisstrings.oasis.bin", Target = @"languages\english\oasisstrings.oasis.bin" },
-            new() { Source = "oasisstrings_subtitles.oasis.bin", Target = @"languages\english\oasisstrings_subtitles.oasis.bin" },
-            new() { Source = "oasisstrings_subtitles_male.oasis.bin", Target = @"languages\english\oasisstrings_subtitles_male.oasis.bin" }
-        };
-        const string desc = @"
-Ubisoft se rozhodl Far Cry 6 nepřekládat, a tak nám nezbývá nic než hrát hru v angličině.
-Proto jsme se rozhodli vytvořit vlastní český překlad.
-
-= INSTALACE =
-=============
-Instalováním češtiny bude přepsán anglický jazyk ve hře, takže zvolte v Uplay / Epic jazyk English a ve hře zvolte anglické titulky.
-
-Pokud instalujete update češtiny, stačí opět vybrat složku s hrou a poté kliknout na ""Instalovat"".
-
-
-= KDO HRU PŘEKLÁDAL =
-=====================
-Johnny Cash
-Jarek459
-Sary
-Reloader158CZ
-mlekocze12
-
-= INSTALÁTOR =
-==============
-ArmanIII
-
-= TESTEŘI PŘEKLADU =
-====================
-Ajper
-Fellras
-Paras
-";
-
         public Form1()
         {
             InitializeComponent();
@@ -349,6 +390,7 @@ Paras
             label1.Text = "Far Cry 6 Čeština v" + ver;
             textBox1.Text = desc;
             lAppVer.Text = "Verze app: " + appVer;
+            lStatus.Text = "";
         }
 
         private void bSelectExe_Click(object sender, EventArgs e)
@@ -361,106 +403,131 @@ Paras
             if (!allow)
                 return;
 
-            Write("Starting install...");
-
-            if (!File.Exists(patchFat) && !File.Exists(patchDat))
+            try
             {
-                File.WriteAllBytes(patchDat, new byte[] { });
+                Write("Starting install...");
 
-                byte[] emptyFat = new byte[]
+                if (!File.Exists(patchFat) && !File.Exists(patchDat))
                 {
+                    File.WriteAllBytes(patchDat, new byte[] { });
+
+                    byte[] emptyFat = new byte[]
+                    {
                     0x32, 0x54, 0x41, 0x46, 0x0B, 0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
                     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
-                };
-
-                File.WriteAllBytes(patchFat, emptyFat);
-
-                Write("Patch files didn't exist. Created.");
-            }
-
-            FileStream outputDat = File.Open(patchDat, FileMode.Open);
-            outputDat.Seek(outputDat.Length, SeekOrigin.Begin);
-
-            if (File.Exists(patchBak))
-            {
-                outputDat.Seek(outputDat.Length - 27, SeekOrigin.Begin);
-                string identif = outputDat.ReadStringZ(Encoding.ASCII);
-
-
-
-                Write("Restoring FAT and DAT...");
-                RestoreFatBak(patchBak, patchDat, patchFat);
-                Write("FAT and DAT restored");
-            }
-
-            Write("Creating FAT bak...");
-            CreateFatBak(patchDat, patchFat, patchBak);
-            Write("FAT bak created.");
-
-            Write("Loading FAT...");
-            SortedDictionary<ulong, FatEntry> Entries = GetFatEntries(patchFat);
-            Write("FAT loaded.");
-
-            outputDat.WriteStringZ("Far Cry 6 Czech starts here.", Encoding.ASCII);
-            outputDat.Seek(outputDat.Position.Align(16), SeekOrigin.Begin);
-
-            Write("DAT opened, seek, begin to write...");
-
-            foreach (FileToPack fileToPack in filesToPack)
-            {
-                Write("Preparing to write " + fileToPack.Source + "...");
-
-                ZipArchive archive = null;
-                if (File.Exists(BaseDir + baseFile))
-                    archive = ZipFile.OpenRead(BaseDir + baseFile);
-                else
-                    archive = GetBaseFromResourceData();
-
-                ZipArchiveEntry zipEntry = archive.Entries.Where(e => e.Name.ToLowerInvariant() == fileToPack.Source.ToLowerInvariant()).FirstOrDefault();
-
-                Stream zipInput = zipEntry.Open();
-                var ms = new MemoryStream();
-                zipInput.CopyTo(ms);
-                byte[] bytes = ms.ToArray();
-
-                Write("Got " + fileToPack.Source + " from zip.");
-
-                ulong fileHash = CRC64.Hash(fileToPack.Target);
-
-                if (!Entries.TryGetValue(fileHash, out FatEntry entry))
-                {
-                    entry = new FatEntry
-                    {
-                        NameHash = fileHash
                     };
+
+                    File.WriteAllBytes(patchFat, emptyFat);
+
+                    Write("Patch files didn't exist. Created.");
                 }
 
-                entry.CompressionScheme = CompressionScheme.None;
-                entry.UncompressedSize = (uint)bytes.Length;
-                entry.CompressedSize = (uint)bytes.Length;
+                FileStream outputDat = File.Open(patchDat, FileMode.Open);
+                outputDat.Seek(outputDat.Length, SeekOrigin.Begin);
 
-                entry.Offset = outputDat.Position;
-                Entries[entry.NameHash] = entry;
+                if (File.Exists(patchBak) && outputDat.Length > 30)
+                {
+                    outputDat.Seek(outputDat.Length - 32, SeekOrigin.Begin);
+                    string identif = outputDat.ReadStringZ(Encoding.ASCII);
+                    outputDat.Close();
 
-                outputDat.Write(bytes);
+                    if (identif == identifStr)
+                    {
+                        Write("Restoring FAT and DAT...");
+                        RestoreFatBak(patchBak, patchDat, patchFat);
+                        Write("FAT and DAT restored");
+                    }
+                    else
+                        Write("Note in DAT doesn't exist.");
+                }
+
+                outputDat.Close();
+
+                Write("Creating FAT bak...");
+                CreateFatBak(patchDat, patchFat, patchBak);
+                Write("FAT bak created.");
+
+                Write("Loading FAT...");
+                SortedDictionary<ulong, FatEntry> Entries = GetFatEntries(patchFat);
+                Write("FAT loaded.");
+
+                outputDat = File.Open(patchDat, FileMode.Open);
+                outputDat.Seek(outputDat.Length, SeekOrigin.Begin);
+
+                outputDat.WriteStringZ("Far Cry 6 Czech starts here.", Encoding.ASCII);
                 outputDat.Seek(outputDat.Position.Align(16), SeekOrigin.Begin);
 
-                Write("Wrote " + fileToPack.Source + ".");
+                Write("DAT opened, seek, begin to write...");
+
+                foreach (FileToPack fileToPack in filesToPack)
+                {
+                    Write("Preparing to write " + fileToPack.Source + "...");
+
+                    ZipArchive archive = null;
+                    if (File.Exists(BaseDir + baseFile))
+                        archive = ZipFile.OpenRead(BaseDir + baseFile);
+                    else
+                        archive = GetBaseFromResourceData();
+
+                    ZipArchiveEntry zipEntry = archive.Entries.Where(e => e.Name.ToLowerInvariant() == fileToPack.Source.ToLowerInvariant()).FirstOrDefault();
+
+                    Stream zipInput = zipEntry.Open();
+                    var ms = new MemoryStream();
+                    zipInput.CopyTo(ms);
+                    byte[] bytes = ms.ToArray();
+
+                    Write("Got " + fileToPack.Source + " from zip.");
+
+                    ulong fileHash = CRC64.Hash(fileToPack.Target);
+
+                    if (!Entries.TryGetValue(fileHash, out FatEntry entry))
+                    {
+                        entry = new FatEntry
+                        {
+                            NameHash = fileHash
+                        };
+                    }
+
+                    entry.CompressionScheme = CompressionScheme.None;
+                    entry.UncompressedSize = (uint)bytes.Length;
+                    entry.CompressedSize = (uint)bytes.Length;
+
+                    entry.Offset = outputDat.Position;
+                    Entries[entry.NameHash] = entry;
+
+                    outputDat.Write(bytes);
+                    outputDat.Seek(outputDat.Position.Align(16), SeekOrigin.Begin);
+
+                    Write("Wrote " + fileToPack.Source + ".");
+                }
+
+                outputDat.WriteStringZ(identifStr, Encoding.ASCII);
+                outputDat.WriteStringZ(ver, Encoding.ASCII);
+
+                Write("Flushing DAT...");
+                outputDat.Flush();
+                outputDat.Close();
+                Write("DAT saved.");
+
+                Write("Creating FAT...");
+                CreateNewFat(patchFat, Entries);
+                Write("FAT created.");
+
+                Write("Install done.");
+
+                readVer = ver;
+                InstallStatus(true);
+                MessageBox.Show(this, "Čeština byla úspěšně nainstalována.", Text, MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
-
-            outputDat.WriteStringZ("Far Cry 6 Czech ends here.", Encoding.ASCII);
-
-            Write("Flushing DAT...");
-            outputDat.Flush();
-            outputDat.Close();
-            Write("DAT saved.");
-
-            Write("Creating FAT...");
-            CreateNewFat(patchFat, Entries);
-            Write("FAT created.");
-
-            Write("Install done.");
-            MessageBox.Show(this, "Čeština byla úspěšně nainstalována.", Text, MessageBoxButtons.OK, MessageBoxIcon.Information);
+            catch(Exception ex)
+            {
+                Write("Install error:");
+                Write(ex.ToString());
+                InstallStatus(false);
+                bool yes = MessageBox.Show(this, $"Aj, někde se stala chyba. Zkuste to znovu, pokud chyba přetrvává, zeptejte se na fóru.{Environment.NewLine}Chcete přejít na fórum?{Environment.NewLine}{Environment.NewLine}{ex.Message}", Text, MessageBoxButtons.YesNo, MessageBoxIcon.Information) == DialogResult.Yes;
+                if (yes)
+                    linkLabel1_LinkClicked(null, null);
+            }
         }
 
         private void bUninstall_Click(object sender, EventArgs e)
@@ -473,14 +540,29 @@ Paras
             {
                 Write("Uninstalling...");
 
-                if (File.Exists(patchBak))
+                FileStream outputDat = File.Open(patchDat, FileMode.Open);
+                outputDat.Seek(outputDat.Length, SeekOrigin.Begin);
+
+                if (File.Exists(patchBak) && outputDat.Length > 30)
                 {
-                    Write("Restoring FAT and DAT...");
-                    RestoreFatBak(patchBak, patchDat, patchFat);
-                    Write("FAT and DAT restored");
+                    outputDat.Seek(outputDat.Length - 32, SeekOrigin.Begin);
+                    string identif = outputDat.ReadStringZ(Encoding.ASCII);
+                    outputDat.Close();
+
+                    if (identif == identifStr)
+                    {
+                        Write("Restoring FAT and DAT...");
+                        RestoreFatBak(patchBak, patchDat, patchFat);
+                        Write("FAT and DAT restored");
+                    }
+                    else
+                        Write("Note in DAT doesn't exist.");
                 }
 
+                outputDat.Close();
+
                 Write("Uninstall done.");
+                InstallStatus(false);
                 MessageBox.Show(this, "Čeština byla úspěšně odinstalována.", Text, MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
         }
