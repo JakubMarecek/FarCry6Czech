@@ -35,7 +35,7 @@ namespace FarCry6Czech
     {
         bool allow = false;
         const string ver = "1.00";
-        const string appVer = "20211031-2200";
+        const string appVer = "20211101-1800";
         const string logFile = "FarCry6Czech.log";
         string BaseDir = "";
         const string baseFile = "FarCry6Czech.zip";
@@ -442,6 +442,12 @@ BoB
                 }
 
                 outputDat.Close();
+
+                if (File.Exists(patchBak))
+                {
+                    Write("FAT bak exists. Deleting.");
+                    File.Delete(patchBak);
+                }
 
                 Write("Creating FAT bak...");
                 CreateFatBak(patchDat, patchFat, patchBak);
